@@ -1,0 +1,72 @@
+---
+import { getLatestLaunchByID } from "../../services/spacex";
+import Layout from "../../layouts/Layout.astro";
+
+export const prerender = false; // para activar la prerenderizacion cuando usas astro hybrid
+
+// cookies
+// if (Astro.cookies.get('user')) {
+//   console.log('user logged');
+//   Astro.response({
+//     status: 200,
+//     headers: {
+//       'Content-Type': 'application/json'
+//     },
+//     body: JSON.stringify({
+//       message: 'User logged',
+//     }),
+//   });
+// } else {
+//   console.log('user not logged');
+// }
+
+const { id } = Astro.params;
+
+let launch;
+if (id) {
+  launch = await getLatestLaunchByID({ id });
+}
+
+// Si tenes el astro en output sin server ni hybrid la forma de abajo es buena
+// Pero generaria paginas de los ids y si son muchas dependiendo de a que llames mucho puede generar mas tiempo el pnpm build
+
+// // De forma estatica iterando sobre los ids
+// export async function getStaticPaths() {
+//   // llamar api externa
+//   // para saber los ids que debe generar
+
+//   const launches = await getLatestLaunches();
+
+//   return launches.map((launch) => ({
+//     params: {
+//       id: launch.id,
+//     },
+//   }));
+// }
+
+// console.log(launch);
+
+// Otra forma estática con paths predefinidos (no recomendado si son muchos ids)
+// export function getStaticPaths() {
+
+//   return [
+//     { params: { id: "5eb87cd9ffd86e000604b32a" } },
+//     { params: { id: "2" } },
+//     { params: { id: "3" } },
+//   ];
+// }
+---
+
+<Layout title={`Lanzamiento ${id}`}>
+  <article class="flex gap-y-4 flex-col">
+    <img
+      class="w-52 h-auto"
+      src={launch?.links?.patch.small}
+      alt={launch?.name}
+    />
+    <h2 class="text-4xl text-white font-bold">
+      Launch #{launch?.flight_number}
+    </h2>
+    <p class="text-lg">{launch?.details}</p>
+  </article>
+</Layout>
